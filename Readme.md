@@ -35,30 +35,31 @@ Output file example is in output_file directory as '10101 - SAFT 02-2020.pdf'
 
 link: https://stackoverflow.com/questions/237079/how-to-get-file-creation-modification-date-times-in-python
 
-By: https://stackoverflow.com/users/3585557/steven-c-howell
+By: 
+* https://stackoverflow.com/users/779118/igracia
+* https://stackoverflow.com/users/1709587/mark-amery
 
-In Python 3.4 and above, you can use the object oriented pathlib module interface which includes wrappers for much of the os module. Here is an example of getting the file stats.
+> Putting this all together, cross-platform code should look something like this...
 
->>> import pathlib
->>> fname = pathlib.Path('test.py')
->>> assert fname.exists(), f'No such file: {fname}'  # check that the file exists
->>> print(fname.stat())
-os.stat_result(st_mode=33206, st_ino=5066549581564298, st_dev=573948050, st_nlink=1, st_uid=0, st_gid=0, st_size=413, st_atime=1523480272, st_mtime=1539787740, st_ctime=1523480272)
-
-For more information about what os.stat_result contains, refer to the documentation. For the modification time you want fname.stat().st_mtime:
-
->>> import datetime
->>> mtime = datetime.datetime.fromtimestamp(fname.stat().st_mtime)
->>> print(mtime)
-datetime.datetime(2018, 10, 17, 10, 49, 0, 249980)
-
-If you want the creation time on Windows, or the most recent metadata change on Unix, you would use fname.stat().st_ctime:
-
->>> ctime = datetime.datetime.fromtimestamp(fname.stat().st_ctime)
->>> print(ctime)
-datetime.datetime(2018, 4, 11, 16, 57, 52, 151953)
-
-This article has more helpful info and examples for the pathlib module.
+    import os
+    import platform
+    
+    def creation_date(path_to_file):
+        """
+        Try to get the date that a file was created, falling back to when it was
+        last modified if that isn't possible.
+        See http://stackoverflow.com/a/39501288/1709587 for explanation.
+        """
+        if platform.system() == 'Windows':
+            return os.path.getctime(path_to_file)
+        else:
+            stat = os.stat(path_to_file)
+            try:
+                return stat.st_birthtime
+            except AttributeError:
+                # We're probably on Linux. No easy way to get creation dates here,
+                # so we'll settle for when its content was last modified.
+                return stat.st_mtime
 
 # How to transform a word file into pdf
 
