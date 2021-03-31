@@ -20,9 +20,10 @@ def query_db(company_id, extractor_type):
     :return: Tuple with the info required for the specific extractor type
     """
     result = None
-    conn = psycopg2.connect(host='localhost', database='senhas', user='postgres', password=DB_PASS)
+    conn = psycopg2.connect(host='localhost', database='confere', user='postgres', password=DB_PASS)
     cur = conn.cursor()
 
+    # Extract nif and company name:
     if extractor_type == 'saft':
         cur.execute(
             'SELECT company, nif FROM companies WHERE client_id = (%s);', (company_id,)
@@ -56,7 +57,7 @@ def saft_to_word(template_path, output_path, *args):
     #     print(arg)
 
     document.merge(
-        cliente=args[0] + ' ' + args[1],
+        cliente=args[0] + ' - ' + args[1],
         nif=args[2],
         ano=args[3],
         mes=args[4],
@@ -84,21 +85,26 @@ def saft_to_word(template_path, output_path, *args):
 
 
 # ---------------------------------------- TRANSFORM TO PDF -------------------------------------------- #
-def word_to_pdf(doc_to_transform, output_file):
-    # TODO 4. Delete existing word
-    # TODO 5. watermark a pdf
+def word_to_pdf(doc_to_transform):
+    # Get current directory
     full_directory = os.path.abspath(os.getcwd())
+    # Join current with the word path to transform
     full_path_doc = os.path.join(full_directory, doc_to_transform)
-
+    # Create the path of the new file pdf with the same name of the word
     full_output_path = os.path.join(full_directory, doc_to_transform[:-5])
 
-    wdFormatPDF = 17
+    word_format_pdf = 17
 
     word = client.Dispatch('Word.Application')
     doc = word.Documents.Open(full_path_doc)
-    doc.SaveAs(full_output_path, FileFormat=wdFormatPDF)
+    doc.SaveAs(full_output_path, FileFormat=word_format_pdf)
     doc.Close()
     word.Quit()
+
+    # Delete Word that has already transform to pdf
+    os.remove(full_path_doc)
+
+    return full_output_path
 
 
 # ------------------------------------------------------------------------------------------------------------------ #
@@ -136,7 +142,10 @@ if __name__ == '__main__':
                 f'Document Successfully saved in "output_file" with the name {path_word}.docx\nTransforming to pdf...')
 
             # Transform to pdf
-            word_to_pdf(path_word, OUTPUT_PATH)
+            path_pdf = word_to_pdf(path_word)
+            print(f'Successfully create pdf at {path_pdf}.pdf')
+            print('-' * 200)
+
 
         elif type_of_files == 'm':
             # Not needed for now.
@@ -146,3 +155,5 @@ if __name__ == '__main__':
         else:
             print('Wrong command, exiting the program...')
             exit()
+
+    print('End Program...')

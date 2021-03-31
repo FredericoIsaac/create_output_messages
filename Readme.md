@@ -30,6 +30,11 @@ Output file example is in output_file directory as '10101 - SAFT 02-2020.pdf'
 
 # Modules to install
 
+    pip install psycopg2
+    pip install Flask
+    pip install flask-sqlalchemy
+    pip install docx-mailmerge
+    pip install pywin32
 
 # How to get the date of file creation
 
@@ -69,26 +74,26 @@ by: https://stackoverflow.com/users/601581/steven
 
 A simple example using comtypes, converting a single file, input and output filenames given as commandline arguments:
 
-import sys
-import os
-import comtypes.client
-
-wdFormatPDF = 17
-
-in_file = os.path.abspath(sys.argv[1])
-out_file = os.path.abspath(sys.argv[2])
-
-word = comtypes.client.CreateObject('Word.Application')
-doc = word.Documents.Open(in_file)
-doc.SaveAs(out_file, FileFormat=wdFormatPDF)
-doc.Close()
-word.Quit()
-You could also use pywin32, which would be the same except for:
-
-import win32com.client
-and then:
-
-word = win32com.client.Dispatch('Word.Application')
+    import sys
+    import os
+    import comtypes.client
+    
+    wdFormatPDF = 17
+    
+    in_file = os.path.abspath(sys.argv[1])
+    out_file = os.path.abspath(sys.argv[2])
+    
+    word = comtypes.client.CreateObject('Word.Application')
+    doc = word.Documents.Open(in_file)
+    doc.SaveAs(out_file, FileFormat=wdFormatPDF)
+    doc.Close()
+    word.Quit()
+    You could also use pywin32, which would be the same except for:
+    
+    import win32com.client
+    and then:
+    
+    word = win32com.client.Dispatch('Word.Application')
 
 
 # How to watermark a pdf
